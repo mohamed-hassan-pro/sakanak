@@ -1,0 +1,250 @@
+// Prisma Schema for Sakanak - Smart Housing Platform
+// سكنك - منصة السكن الذكية للمغتربين في مصر
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// نموذج المستخدم - يدعم الملاك والمغتربين
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  role          Role      // OWNER أو EXPAT
+  phone         String?
+  avatar        String?
+  preferences   Json?     // تفضيلات المغترب (للـ AI)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // العلاقات
+  properties    Property[] @relation("OwnerProperties")
+  messagesSent  Message[] @relation("SentMessages")
+  messagesReceived Message[] @relation("ReceivedMessages")
+  bookings      Booking[]
+  favorites     Favorite[]
+  
+  // نظام التقييمات
+  reviewsGiven  Review[] @relation("ExpatReviews")
+  reviewsReceived Review[] @relation("OwnerReviews")
+  tenantReviewsGiven TenantReview[] @relation("TenantReviewsGiven")
+  tenantReviewsReceived TenantReview[] @relation("TenantReviewsReceived")
+  
+  // الإحصائيات
+  ownerStats    OwnerStats?
+  expatStats    ExpatStats?
+  
+  @@map("users")
+}
+
+// نموذج العقار/السكن
+model Property {
+  id            String    @id @default(cuid())
+  title         String
+  description   String
+  price         Float     // السعر بالجنيه (500-3000 للسرير)
+  priceType     String    // "per_bed" أو "per_room" أو "per_apartment"
+  location      String
+  city          String
+  coordinates   Json?     // {lat: x, lng: y} للـ map
+  nearTo        String[]  // الجامعات القريبة (مصفوفة)
+  distanceTo    Json?     // {university: "Cairo Uni", distance: 2.5}
+  type          String    // سرير في غرفة مشتركة، غرفة خاصة، شقة كاملة
+  rooms         Int
+  beds          Int       // عدد السراير المتاحة
+  bathrooms     Int
+  amenities     String[]  // WiFi, AC, Kitchen, Laundry, Security
+  images        String[]
+  verified      Boolean   @default(false)
+  featured      Boolean   @default(false)
+  available     Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // العلاقات
+  ownerId       String
+  owner         User      @relation("OwnerProperties", fields: [ownerId], references: [id])
+  messages      Message[]
+  bookings      Booking[]
+  favorites     Favorite[]
+  reviews       Review[]
+  
+  @@map("properties")
+}
+
+// نموذج المفضلة
+model Favorite {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  propertyId    String
+  property      Property  @relation(fields: [propertyId], references: [id])
+  createdAt     DateTime  @default(now())
+  
+  @@unique([userId, propertyId])
+  @@map("favorites")
+}
+
+// نموذج الرسائل
+model Message {
+  id            String    @id @default(cuid())
+  content       String
+  senderId      String
+  sender        User      @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId    String
+  receiver      User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  propertyId    String
+  property      Property  @relation(fields: [propertyId], references: [id])
+  createdAt     DateTime  @default(now())
+  read          Boolean   @default(false)
+  
+  @@map("messages")
+}
+
+// نموذج الحجوزات/طلبات المعاينة
+model Booking {
+  id            String    @id @default(cuid())
+  propertyId    String
+  property      Property  @relation(fields: [propertyId], references: [id])
+  expatId       String
+  expat         User      @relation(fields: [expatId], references: [id])
+  status        BookingStatus @default(pending)
+  visitDate     DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // للتقييمات
+  review        Review?
+  
+  @@map("bookings")
+}
+
+// نموذج التقييمات - نظام الثقة الذكي
+model Review {
+  id              String   @id @default(cuid())
+  bookingId       String   @unique
+  booking         Booking  @relation(fields: [bookingId], references: [id])
+  propertyId      String
+  property        Property @relation(fields: [propertyId], references: [id])
+  reviewerId      String   // المغترب
+  reviewer        User     @relation("ExpatReviews", fields: [reviewerId], references: [id])
+  ownerId         String   // المالك
+  owner           User     @relation("OwnerReviews", fields: [ownerId], references: [id])
+  
+  // التقييمات الرقمية (1-5)
+  photosAccuracy  Int      // الصور مطابقة للواقع؟
+  descriptionAccuracy Int  // الوصف صادق؟
+  amenitiesMatch  Int      // المواصفات موجودة؟
+  safetyAccuracy  Int      // المنطقة آمنة كما وصف؟
+  overallRating   Int      // التقييم العام
+  
+  // الأسئلة المحددة
+  photosMatch     Boolean? // الصور مطابقة تماماً؟
+  amenitiesPresent Json?   // {wifi: true, ac: false, ...}
+  wouldRecommend  Boolean  // هل يوصي؟
+  
+  // تفاصيل إضافية
+  comment         String?
+  visitPhotos     String[] // صور من المعاينة
+  
+  // metadata
+  visitDate       DateTime // تاريخ المعاينة الفعلي
+  createdAt       DateTime @default(now())
+  
+  // حساب الـ Trust Score تلقائياً
+  trustScore      Float    // (photosAccuracy + descriptionAccuracy + amenitiesMatch + safetyAccuracy) / 4 * 20
+  
+  @@map("reviews")
+}
+
+// نموذج تقييم المغترب (من المالك)
+model TenantReview {
+  id              String   @id @default(cuid())
+  tenantId        String   // المغترب اللي بيتقيم
+  tenant          User     @relation("TenantReviewsReceived", fields: [tenantId], references: [id])
+  ownerId         String   // المالك اللي قيم
+  owner           User     @relation("TenantReviewsGiven", fields: [ownerId], references: [id])
+  propertyId      String
+  
+  // التقييمات
+  punctuality     Int      // الالتزام بالمواعيد
+  respectRules    Int      // احترام القواعد
+  cleanliness     Int      // النظافة
+  communication   Int      // التواصل
+  
+  // النتيجة
+  rentedFinally   String   // "through_platform", "direct", "no", "pending"
+  comment         String?
+  
+  createdAt       DateTime @default(now())
+  
+  // حساب الـ Tenant Score
+  tenantScore     Float
+  
+  @@map("tenant_reviews")
+}
+
+// إحصائيات المالك
+model OwnerStats {
+  id              String   @id @default(cuid())
+  ownerId         String   @unique
+  owner           User     @relation(fields: [ownerId], references: [id])
+  
+  // الإحصائيات المتراكمة
+  totalReviews    Int      @default(0)
+  averageTrustScore Float  @default(0)
+  photosAccuracy  Float    @default(0)
+  descriptionAccuracy Float @default(0)
+  amenitiesMatch  Float    @default(0)
+  safetyAccuracy  Float    @default(0)
+  overallRating   Float    @default(0)
+  
+  // الـ Badges
+  badge           String   @default("new") // "new", "verified", "trusted", "flagged"
+  
+  // آخر تحديث
+  updatedAt       DateTime @updatedAt
+  
+  @@map("owner_stats")
+}
+
+// إحصائيات المغترب
+model ExpatStats {
+  id              String   @id @default(cuid())
+  expatId         String   @unique
+  expat           User     @relation(fields: [expatId], references: [id])
+  
+  // الإحصائيات
+  totalReviews    Int      @default(0)
+  averageTenantScore Float @default(0)
+  punctuality     Float    @default(0)
+  respectRules    Float    @default(0)
+  
+  // الـ Badges
+  badge           String   @default("new") // "new", "reliable", "super_tenant"
+  
+  updatedAt       DateTime @updatedAt
+  
+  @@map("expat_stats")
+}
+
+// الأدوار
+enum Role {
+  OWNER
+  EXPAT
+}
+
+// حالات الحجز
+enum BookingStatus {
+  pending
+  confirmed
+  cancelled
+  completed
+  visited
+}
