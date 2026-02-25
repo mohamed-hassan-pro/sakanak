@@ -19,11 +19,18 @@ import { ExpatDashboard } from '@/sections/ExpatDashboard';
 import { ExpatSearch } from '@/sections/ExpatSearch';
 import { ExpatFavorites } from '@/sections/ExpatFavorites';
 import { ExpatMessages } from '@/sections/ExpatMessages';
+import { ExpatPropertyDetails } from '@/sections/ExpatPropertyDetails';
+import { ExpatBookings } from '@/sections/ExpatBookings';
+import { PostVisitReview } from '@/sections/PostVisitReview';
 import { OnboardingWizard } from '@/components/onboarding-wizard/OnboardingWizard';
 
 // Owner Pages
 import { OwnerDashboard } from '@/sections/OwnerDashboard';
 import { OwnerAddProperty } from '@/sections/OwnerAddProperty';
+import { OwnerProperties } from '@/sections/OwnerProperties';
+import { OwnerAnalytics } from '@/sections/OwnerAnalytics';
+import { OwnerMessages } from '@/sections/OwnerMessages';
+import { OwnerEditProperty } from '@/sections/OwnerEditProperty';
 
 // Protected Route Component
 function ProtectedRoute({
@@ -115,11 +122,41 @@ function App() {
           }
         />
         <Route
+          path="/dashboard/expat/property/:id"
+          element={
+            <ProtectedRoute allowedRole="EXPAT">
+              <ExpatLayout>
+                <ExpatPropertyDetails />
+              </ExpatLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/dashboard/expat/messages"
           element={
             <ProtectedRoute allowedRole="EXPAT">
               <ExpatLayout>
                 <ExpatMessages />
+              </ExpatLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/expat/bookings"
+          element={
+            <ProtectedRoute allowedRole="EXPAT">
+              <ExpatLayout>
+                <ExpatBookings />
+              </ExpatLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/expat/review/:bookingId"
+          element={
+            <ProtectedRoute allowedRole="EXPAT">
+              <ExpatLayout>
+                <PostVisitReview />
               </ExpatLayout>
             </ProtectedRoute>
           }
@@ -141,7 +178,17 @@ function App() {
           element={
             <ProtectedRoute allowedRole="OWNER">
               <OwnerLayout>
-                <OwnerDashboard /> {/* TODO: Create OwnerProperties page */}
+                <OwnerProperties />
+              </OwnerLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/owner/edit-property/:propertyId"
+          element={
+            <ProtectedRoute allowedRole="OWNER">
+              <OwnerLayout>
+                <OwnerEditProperty />
               </OwnerLayout>
             </ProtectedRoute>
           }
@@ -161,7 +208,7 @@ function App() {
           element={
             <ProtectedRoute allowedRole="OWNER">
               <OwnerLayout>
-                <ExpatMessages /> {/* TODO: Create OwnerMessages page */}
+                <OwnerMessages />
               </OwnerLayout>
             </ProtectedRoute>
           }
@@ -171,7 +218,7 @@ function App() {
           element={
             <ProtectedRoute allowedRole="OWNER">
               <OwnerLayout>
-                <OwnerDashboard /> {/* TODO: Create OwnerAnalytics page */}
+                <OwnerAnalytics />
               </OwnerLayout>
             </ProtectedRoute>
           }

@@ -11,17 +11,22 @@ import {
   ArrowLeft,
   Star,
   Calendar,
+  Users,
+  Clock,
+  CheckCircle2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useAuthStore, usePropertiesStore } from '@/lib/store';
-import { seedProperties } from '@/lib/seed-data';
-import type { Property } from '@/types';
+import { useAuthStore, usePropertiesStore, useBookingsStore, useReviewsStore } from '@/lib/store';
+import { seedProperties, seedBookings, seedReviews } from '@/lib/seed-data';
+import type { Property, Booking, Review } from '@/types';
 
 export function OwnerDashboard() {
   const { user } = useAuthStore();
   const { properties, setProperties } = usePropertiesStore();
+  const { bookings, setBookings, approveBooking, rejectBooking } = useBookingsStore();
+  const { reviews, setReviews } = useReviewsStore();
   const [myProperties, setMyProperties] = useState<Property[]>([]);
   const [stats, setStats] = useState({
     totalViews: 0,
@@ -31,7 +36,9 @@ export function OwnerDashboard() {
   });
 
   useEffect(() => {
-    setProperties(seedProperties as Property[]);
+    if (properties.length === 0) setProperties(seedProperties as Property[]);
+    if (bookings.length === 0) setBookings(seedBookings as Booking[]);
+    if (reviews.length === 0) setReviews(seedReviews as Review[]);
   }, []);
 
   useEffect(() => {
@@ -39,14 +46,24 @@ export function OwnerDashboard() {
     const ownerProps = properties.filter((_p) => _p.ownerId === user?.id || _p.ownerId === 'owner-001');
     setMyProperties(ownerProps);
 
+    const ownerReviews = reviews.filter(r => r.ownerId === (user?.id || 'owner-001'));
+    const avgRating = ownerReviews.length > 0
+      ? Number((ownerReviews.reduce((acc, r) => acc + r.overallRating, 0) / ownerReviews.length).toFixed(1))
+      : 4.5;
+
     // حساب الإحصائيات
     setStats({
-      totalViews: ownerProps.reduce((sum) => sum + Math.floor(Math.random() * 100), 0),
+      totalViews: ownerProps.length * 42, // Mock 
       totalMessages: 12,
       totalProperties: ownerProps.length,
-      avgRating: 4.5,
+      avgRating,
     });
-  }, [properties, user]);
+  }, [properties, user, bookings, reviews]);
+
+  const pendingBookings = bookings.filter(b =>
+    b.status === 'pending' &&
+    myProperties.some(p => p.id === b.propertyId)
+  );
 
   const statCards = [
     {
@@ -160,9 +177,8 @@ export function OwnerDashboard() {
               ].map((msg, index) => (
                 <div
                   key={index}
-                  className={`flex items-start gap-3 p-3 rounded-lg ${
-                    msg.unread ? 'bg-blue-50' : 'bg-gray-50'
-                  }`}
+                  className={`flex items-start gap-3 p-3 rounded-lg ${msg.unread ? 'bg-blue-50' : 'bg-gray-50'
+                    }`}
                 >
                   <div className="w-10 h-10 bg-[#1e3a5f] rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-sm font-bold">
@@ -184,41 +200,69 @@ export function OwnerDashboard() {
             </div>
           </Card>
 
-          {/* Upcoming Visits */}
+          {/* Pending Booking Requests */}
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-[#1e3a5f]">معاينات قادمة</h2>
-              <Calendar className="w-5 h-5 text-gray-400" />
+              <h2 className="text-lg font-bold text-[#1e3a5f]">طلبات معاينة جديدة</h2>
+              <Badge variant="outline" className="text-orange-600 border-orange-200">
+                {pendingBookings.length} طلب
+              </Badge>
             </div>
-            <div className="space-y-4">
-              {[
-                {
-                  name: 'محمد من السودان',
-                  property: 'سرير في غرفة مفروشة',
-                  date: 'السبت، 25 فبراير',
-                  time: '10:00 ص',
-                },
-                {
-                  name: 'فاطمة من المغرب',
-                  property: 'غرفة خاصة',
-                  date: 'الأحد، 26 فبراير',
-                  time: '2:00 م',
-                },
-              ].map((visit, index) => (
-                <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 bg-[#2a9d8f] rounded-full flex items-center justify-center flex-shrink-0">
-                    <Calendar className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-sm">{visit.name}</h4>
-                    <p className="text-sm text-gray-600">{visit.property}</p>
-                    <p className="text-xs text-[#2a9d8f] mt-1">
-                      {visit.date} - {visit.time}
-                    </p>
-                  </div>
+
+            {pendingBookings.length > 0 ? (
+              <div className="space-y-4">
+                {pendingBookings.map((booking) => {
+                  const prop = properties.find(p => p.id === booking.propertyId);
+                  return (
+                    <div key={booking.id} className="p-4 border rounded-xl hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                          <Users className="w-5 h-5 text-orange-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm">طالب مغترب</h4>
+                          <p className="text-[10px] text-gray-500">{prop?.title.substring(0, 30)}...</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-gray-600 mb-4 bg-gray-50 p-2 rounded-lg">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {booking.visitDate ? new Date(booking.visitDate).toLocaleDateString('ar-EG') : 'قريباً'}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {booking.visitDate ? new Date(booking.visitDate).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : '10:00 ص'}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="flex-1 bg-green-600 hover:bg-green-700 h-8 text-xs"
+                          onClick={() => approveBooking(booking.id)}
+                        >
+                          موافقة
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-red-600 border-red-100 hover:bg-red-50 h-8 text-xs"
+                          onClick={() => rejectBooking(booking.id)}
+                        >
+                          رفض
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle2 className="w-6 h-6 text-gray-300" />
                 </div>
-              ))}
-            </div>
+                <p className="text-sm text-gray-400">لا توجد طلبات معلقة</p>
+              </div>
+            )}
           </Card>
         </div>
 

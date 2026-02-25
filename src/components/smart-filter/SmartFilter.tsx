@@ -2,21 +2,22 @@
 // مكون الفلتر الذكي للبحث عن السكن
 
 import { useState } from 'react';
-import { 
-  SlidersHorizontal, 
-  Wallet, 
+import {
+  SlidersHorizontal,
+  Wallet,
   Check,
-  X
+  X,
+  MapPin
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { 
-  SUPPORTED_CITIES, 
-  PROPERTY_TYPES, 
+import {
+  SUPPORTED_CITIES,
+  PROPERTY_TYPES,
   AMENITIES,
-  type SearchCriteria 
+  type SearchCriteria
 } from '@/types';
 
 interface SmartFilterProps {
@@ -26,16 +27,16 @@ interface SmartFilterProps {
   resultsCount: number;
 }
 
-export function SmartFilter({ 
-  criteria, 
-  onChange, 
+export function SmartFilter({
+  criteria,
+  onChange,
   onReset,
-  resultsCount 
+  resultsCount
 }: SmartFilterProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const hasActiveFilters = 
-    criteria.city || 
+  const hasActiveFilters =
+    criteria.city ||
     criteria.university ||
     criteria.minPrice !== undefined ||
     criteria.maxPrice !== undefined ||
@@ -78,7 +79,7 @@ export function SmartFilter({
             </Badge>
           )}
         </div>
-        
+
         <div className="flex items-center gap-2">
           {hasActiveFilters && (
             <Button
@@ -136,10 +137,10 @@ export function SmartFilter({
           value={`${criteria.minPrice || 0}-${criteria.maxPrice || 3000}`}
           onChange={(e) => {
             const [min, max] = e.target.value.split('-').map(Number);
-            onChange({ 
-              ...criteria, 
-              minPrice: min || undefined, 
-              maxPrice: max || undefined 
+            onChange({
+              ...criteria,
+              minPrice: min || undefined,
+              maxPrice: max || undefined
             });
           }}
           className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
@@ -181,6 +182,29 @@ export function SmartFilter({
             </div>
           </div>
 
+          {/* Distance Filter */}
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium mb-3">
+              <MapPin className="w-4 h-4" />
+              المسافة من الجامعة (كم)
+            </label>
+            <div className="px-2">
+              <Slider
+                value={[criteria.maxDistance || 10]}
+                onValueChange={([val]) =>
+                  onChange({ ...criteria, maxDistance: val })
+                }
+                min={1}
+                max={20}
+                step={0.5}
+              />
+              <div className="flex justify-between mt-2 text-sm text-gray-500">
+                <span>1 كم</span>
+                <span>أقصى مسافة: {criteria.maxDistance || 10} كم</span>
+              </div>
+            </div>
+          </div>
+
           {/* Amenities */}
           <div>
             <label className="flex items-center gap-2 text-sm font-medium mb-3">
@@ -194,11 +218,10 @@ export function SmartFilter({
                   <button
                     key={amenity.id}
                     onClick={() => toggleAmenity(amenity.id)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${
-                      isSelected
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${isSelected
                         ? 'border-[#1e3a5f] bg-[#1e3a5f]/5 text-[#1e3a5f]'
                         : 'border-gray-200 hover:border-[#1e3a5f]/50'
-                    }`}
+                      }`}
                   >
                     {isSelected && <Check className="w-4 h-4" />}
                     <span className="text-sm">{amenity.name}</span>
@@ -243,10 +266,14 @@ export function ActiveFilters({ criteria, onRemove }: ActiveFiltersProps) {
   }
 
   if (criteria.amenities && criteria.amenities.length > 0) {
-    const amenityLabels = criteria.amenities.map(id => 
+    const amenityLabels = criteria.amenities.map(id =>
       AMENITIES.find(a => a.id === id)?.name || id
     );
     filters.push({ key: 'amenities', label: 'المرافق', value: amenityLabels.join(', ') });
+  }
+
+  if (criteria.maxDistance !== undefined) {
+    filters.push({ key: 'maxDistance', label: 'المسافة', value: `أقل من ${criteria.maxDistance} كم` });
   }
 
   if (filters.length === 0) return null;

@@ -19,45 +19,46 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { useAuthStore } from '@/lib/store';
+import { useAuthStore, useNotificationStore } from '@/lib/store';
 
 const menuItems = [
-  { 
-    id: 'dashboard', 
-    label: 'لوحة التحكم', 
-    icon: LayoutDashboard, 
-    path: '/dashboard/owner/dashboard' 
+  {
+    id: 'dashboard',
+    label: 'لوحة التحكم',
+    icon: LayoutDashboard,
+    path: '/dashboard/owner/dashboard'
   },
-  { 
-    id: 'properties', 
-    label: 'عقاراتي', 
-    icon: Building2, 
-    path: '/dashboard/owner/properties' 
+  {
+    id: 'properties',
+    label: 'عقاراتي',
+    icon: Building2,
+    path: '/dashboard/owner/properties'
   },
-  { 
-    id: 'add-property', 
-    label: 'إضافة عقار', 
-    icon: PlusCircle, 
-    path: '/dashboard/owner/add-property' 
+  {
+    id: 'add-property',
+    label: 'إضافة عقار',
+    icon: PlusCircle,
+    path: '/dashboard/owner/add-property'
   },
-  { 
-    id: 'messages', 
-    label: 'الرسائل', 
-    icon: MessageSquare, 
+  {
+    id: 'messages',
+    label: 'الرسائل',
+    icon: MessageSquare,
     path: '/dashboard/owner/messages',
     badge: 3
   },
-  { 
-    id: 'analytics', 
-    label: 'الإحصائيات', 
-    icon: BarChart3, 
-    path: '/dashboard/owner/analytics' 
+  {
+    id: 'analytics',
+    label: 'الإحصائيات',
+    icon: BarChart3,
+    path: '/dashboard/owner/analytics'
   },
 ];
 
 export function OwnerSidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { user, logout } = useAuthStore();
+  const { unreadCount, markAllAsRead } = useNotificationStore();
   const location = useLocation();
 
   const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
@@ -82,18 +83,15 @@ export function OwnerSidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:sticky top-0 right-0 h-screen w-72 bg-white border-l shadow-lg z-40 transition-transform duration-300 ${
-          isMobileOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
-        }`}
+        className={`fixed lg:sticky top-0 right-0 h-screen w-72 bg-white border-l shadow-lg z-40 transition-transform duration-300 ${isMobileOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
+          }`}
       >
         {/* Logo */}
         <div className="p-6 border-b">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#1e3a5f] rounded-lg flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
+            <img src="/src/assets/logo.png" alt="Sakanak" className="h-10 w-auto object-contain" />
             <div>
-              <h1 className="font-bold text-xl text-[#1e3a5f]">سكنك</h1>
+              <h1 className="font-bold text-xl text-[#1e3a5f] tracking-tight">سكنك</h1>
               <p className="text-xs text-gray-500">لوحة تحكم المالك</p>
             </div>
           </div>
@@ -120,17 +118,16 @@ export function OwnerSidebar() {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
-            
+
             return (
               <NavLink
                 key={item.id}
                 to={item.path}
                 onClick={() => setIsMobileOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  isActive
-                    ? 'bg-[#1e3a5f] text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive
+                  ? 'bg-[#1e3a5f] text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+                  }`}
               >
                 <Icon className="w-5 h-5" />
                 <span className="flex-1">{item.label}</span>
@@ -157,10 +154,14 @@ export function OwnerSidebar() {
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start gap-3 text-gray-600"
+              className="w-full justify-start gap-3 text-gray-600 relative"
+              onClick={() => markAllAsRead()}
             >
               <Bell className="w-5 h-5" />
               الإشعارات
+              {unreadCount > 0 && (
+                <Badge className="mr-auto bg-red-500 text-white">{unreadCount}</Badge>
+              )}
             </Button>
             <Button
               variant="ghost"

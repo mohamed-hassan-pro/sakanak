@@ -14,23 +14,27 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PropertyCard } from '@/components/property-card/PropertyCard';
-import { useAuthStore, usePropertiesStore, useOnboardingStore } from '@/lib/store';
-import { seedProperties } from '@/lib/seed-data';
+import { useAuthStore, usePropertiesStore, useOnboardingStore, useBookingsStore } from '@/lib/store';
+import { seedProperties, seedBookings } from '@/lib/seed-data';
 import { getTopMatches } from '@/lib/ai-matcher';
-import type { Property } from '@/types';
+import type { Property, Booking } from '@/types';
 
 export function ExpatDashboard() {
   const { user } = useAuthStore();
   const { properties, setProperties, favorites, toggleFavorite } = usePropertiesStore();
   const { criteria, isComplete } = useOnboardingStore();
+  const { bookings, setBookings } = useBookingsStore();
   const [matches, setMatches] = useState<any[]>([]);
   const [recentViews, setRecentViews] = useState<Property[]>([]);
+  const [isMatching, setIsMatching] = useState(false);
 
   useEffect(() => {
     // تحميل العقارات
-    setProperties(seedProperties as Property[]);
-    
+    if (properties.length === 0) setProperties(seedProperties as Property[]);
+    if (bookings.length === 0) setBookings(seedBookings as Booking[]);
+
     // اختيار عقارات عشوائية للمشاهدات الأخيرة
     const shuffled = [...seedProperties].sort(() => 0.5 - Math.random());
     setRecentViews(shuffled.slice(0, 3) as Property[]);
@@ -39,16 +43,22 @@ export function ExpatDashboard() {
   useEffect(() => {
     // حساب المطابقات إذا كان الـ Onboarding مكتمل
     if (isComplete && criteria.university) {
-      const topMatches = getTopMatches(criteria, properties, 3);
-      setMatches(topMatches);
+      setIsMatching(true);
+      // محاكاة وقت المعالجة للـ AI
+      const timer = setTimeout(() => {
+        const topMatches = getTopMatches(criteria, properties, 3);
+        setMatches(topMatches);
+        setIsMatching(false);
+      }, 1500);
+      return () => clearTimeout(timer);
     }
   }, [isComplete, criteria, properties]);
 
   const stats = [
-    { label: 'السكنات المحفوظة', value: favorites.length, icon: Heart, color: 'text-red-500' },
-    { label: 'المحادثات', value: 3, icon: MessageSquare, color: 'text-blue-500' },
-    { label: 'معاينات مجدولة', value: 1, icon: Calendar, color: 'text-green-500' },
-    { label: 'آخر مشاهدة', value: 'اليوم', icon: TrendingUp, color: 'text-purple-500' },
+    { label: 'السكنات المحفوظة', value: favorites.length, icon: Heart, color: 'text-red-500', link: '/dashboard/expat/favorites' },
+    { label: 'المحادثات', value: 3, icon: MessageSquare, color: 'text-blue-500', link: '/dashboard/expat/messages' },
+    { label: 'معاينات مجدولة', value: bookings.filter(b => b.status === 'confirmed').length, icon: Calendar, color: 'text-green-500', link: '/dashboard/expat/bookings' },
+    { label: 'آخر مشاهدة', value: 'اليوم', icon: TrendingUp, color: 'text-purple-500', link: '#' },
   ];
 
   return (
@@ -76,17 +86,19 @@ export function ExpatDashboard() {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
             {stats.map((stat, index) => (
-              <Card key={index} className="p-4 bg-white/10 backdrop-blur border-0">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center ${stat.color}`}>
-                    <stat.icon className="w-5 h-5" />
+              <Link key={index} to={stat.link}>
+                <Card className="p-4 bg-white/10 backdrop-blur border-0 hover:bg-white/20 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center ${stat.color}`}>
+                      <stat.icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold">{stat.value}</div>
+                      <div className="text-sm text-white/70">{stat.label}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <div className="text-sm text-white/70">{stat.label}</div>
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
@@ -115,16 +127,31 @@ export function ExpatDashboard() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {matches.map((match) => (
-                <PropertyCard
-                  key={match.property.id}
-                  property={match.property}
-                  matchScore={match}
-                  showMatchScore={true}
-                  isFavorite={favorites.includes(match.property.id)}
-                  onFavoriteToggle={toggleFavorite}
-                />
-              ))}
+              {isMatching ? (
+                // Skeletons
+                [1, 2, 3].map((i) => (
+                  <div key={i} className="space-y-4">
+                    <Skeleton className="h-48 w-full rounded-xl" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <div className="flex justify-between">
+                      <Skeleton className="h-8 w-1/3" />
+                      <Skeleton className="h-8 w-1/4" />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                matches.map((match) => (
+                  <PropertyCard
+                    key={match.property.id}
+                    property={match.property}
+                    matchScore={match}
+                    showMatchScore={true}
+                    isFavorite={favorites.includes(match.property.id)}
+                    onFavoriteToggle={toggleFavorite}
+                  />
+                ))
+              )}
             </div>
           </section>
         )}

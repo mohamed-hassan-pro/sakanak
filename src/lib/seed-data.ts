@@ -1,7 +1,7 @@
 // Seed Data for Sakanak
 // بيانات واقعية للسكنات في مختلف الجامعات المصرية
 
-import type { Property } from '@/types';
+import type { Property, Review, Booking, OwnerStats } from '@/types';
 
 export const seedProperties: Partial<Property>[] = [
   // القاهرة - جامعة القاهرة
@@ -720,9 +720,10 @@ export const seedMessages = [
 ];
 
 // التقييمات الواقعية
-export const seedReviews = [
+export const seedReviews: Review[] = [
   {
     id: 'review-001',
+    bookingId: 'book-001',
     propertyId: 'prop-001',
     reviewerId: 'expat-001',
     ownerId: 'owner-001',
@@ -734,10 +735,13 @@ export const seedReviews = [
     wouldRecommend: true,
     comment: 'الصور كانت بالظبط زي الواقع، المالك محترم جداً والسكن نظيف. أنصح بيه بشدة!',
     trustScore: 95,
-    createdAt: new Date('2025-02-25'),
+    visitPhotos: [],
+    visitDate: new Date('2025-02-15'),
+    createdAt: new Date('2025-02-15'),
   },
   {
     id: 'review-002',
+    bookingId: 'book-002',
     propertyId: 'prop-004',
     reviewerId: 'expat-002',
     ownerId: 'owner-004',
@@ -749,10 +753,13 @@ export const seedReviews = [
     wouldRecommend: true,
     comment: 'AC شغال كويس، بس الإنترنت أحياناً بيبطأ شوية. بشكل عام تجربة ممتازة.',
     trustScore: 92,
-    createdAt: new Date('2025-02-24'),
+    visitPhotos: [],
+    visitDate: new Date('2025-02-18'),
+    createdAt: new Date('2025-02-18'),
   },
   {
     id: 'review-003',
+    bookingId: 'book-003',
     propertyId: 'prop-010',
     reviewerId: 'expat-004',
     ownerId: 'owner-010',
@@ -764,13 +771,143 @@ export const seedReviews = [
     wouldRecommend: true,
     comment: 'الأمان ممتاز والمطبخ مجهز بكل حاجة. المالك متعاون جداً.',
     trustScore: 93,
+    visitPhotos: [],
+    visitDate: new Date('2025-02-20'),
+    createdAt: new Date('2025-02-20'),
+  },
+  {
+    id: 'review-004',
+    bookingId: 'book-004',
+    propertyId: 'prop-002',
+    reviewerId: 'expat-003',
+    ownerId: 'owner-002',
+    photosAccuracy: 5,
+    descriptionAccuracy: 5,
+    amenitiesMatch: 5,
+    safetyAccuracy: 5,
+    overallRating: 5,
+    wouldRecommend: true,
+    comment: 'سكن ممتاز وقريب جداً من المترو. الغرفة واسعة والتهوية كويسة.',
+    trustScore: 100,
+    visitPhotos: [],
+    visitDate: new Date('2025-02-10'),
+    createdAt: new Date('2025-02-10'),
+  },
+  {
+    id: 'review-005',
+    bookingId: 'book-005',
+    propertyId: 'prop-006',
+    reviewerId: 'expat-001',
+    ownerId: 'owner-006',
+    photosAccuracy: 4,
+    descriptionAccuracy: 4,
+    amenitiesMatch: 3,
+    safetyAccuracy: 5,
+    overallRating: 4,
+    wouldRecommend: true,
+    comment: 'المنظر على البحر يجنن! بس الإنترنت كان فيه مشكلة شوية أول يومين.',
+    trustScore: 85,
+    visitPhotos: [],
+    visitDate: new Date('2025-02-12'),
+    createdAt: new Date('2025-02-12'),
+  },
+  {
+    id: 'review-006',
+    bookingId: 'book-006',
+    propertyId: 'prop-013',
+    reviewerId: 'expat-003',
+    ownerId: 'owner-013',
+    photosAccuracy: 3,
+    descriptionAccuracy: 4,
+    amenitiesMatch: 4,
+    safetyAccuracy: 4,
+    overallRating: 3,
+    wouldRecommend: false,
+    comment: 'السكن قديم شوية والصور كانت متجملة بزيادة. بس السعر مناسب للميزانية الضعيفة.',
+    trustScore: 70,
+    visitPhotos: [],
+    visitDate: new Date('2025-02-05'),
+    createdAt: new Date('2025-02-05'),
+  },
+];
+
+// الحجوزات الواقعية
+export const seedBookings: Booking[] = [
+  {
+    id: 'book-010',
+    propertyId: 'prop-001',
+    expatId: 'expat-001',
+    status: 'pending',
+    visitDate: new Date('2025-03-01T10:00:00'),
+    notes: 'عايز أشوف الحمام والمطبخ كويس',
+    createdAt: new Date('2025-02-24'),
+  },
+  {
+    id: 'book-011',
+    propertyId: 'prop-010',
+    expatId: 'expat-004',
+    status: 'confirmed',
+    visitDate: new Date('2025-02-28T14:00:00'),
     createdAt: new Date('2025-02-23'),
+  },
+  {
+    id: 'book-012',
+    propertyId: 'prop-004',
+    expatId: 'expat-002',
+    status: 'confirmed',
+    visitDate: new Date('2025-02-27T18:00:00'),
+    createdAt: new Date('2025-02-22'),
   },
 ];
 
 // إحصائيات الملاك
-export const seedOwnerStats = [
-  { ownerId: 'owner-001', totalReviews: 5, averageTrustScore: 95, badge: 'trusted' },
-  { ownerId: 'owner-004', totalReviews: 3, averageTrustScore: 92, badge: 'verified' },
-  { ownerId: 'owner-010', totalReviews: 4, averageTrustScore: 93, badge: 'verified' },
+export const seedOwnerStats: OwnerStats[] = [
+  {
+    id: 'stats-001',
+    ownerId: 'owner-001',
+    totalReviews: 5,
+    averageTrustScore: 95,
+    photosAccuracy: 98,
+    descriptionAccuracy: 95,
+    amenitiesMatch: 92,
+    safetyAccuracy: 95,
+    overallRating: 4.8,
+    badge: 'trusted'
+  },
+  {
+    id: 'stats-004',
+    ownerId: 'owner-004',
+    totalReviews: 3,
+    averageTrustScore: 92,
+    photosAccuracy: 90,
+    descriptionAccuracy: 95,
+    amenitiesMatch: 95,
+    safetyAccuracy: 90,
+    overallRating: 4.5,
+    badge: 'verified'
+  },
+  {
+    id: 'stats-010',
+    ownerId: 'owner-010',
+    totalReviews: 4,
+    averageTrustScore: 93,
+    photosAccuracy: 95,
+    descriptionAccuracy: 90,
+    amenitiesMatch: 95,
+    safetyAccuracy: 92,
+    overallRating: 4.6,
+    badge: 'verified'
+  },
+  {
+    id: 'stats-013',
+    ownerId: 'owner-013',
+    totalReviews: 2,
+    averageTrustScore: 70,
+    photosAccuracy: 65,
+    descriptionAccuracy: 75,
+    amenitiesMatch: 70,
+    safetyAccuracy: 70,
+    overallRating: 3.2,
+    badge: 'flagged'
+  },
 ];

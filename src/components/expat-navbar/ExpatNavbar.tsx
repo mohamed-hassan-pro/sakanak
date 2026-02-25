@@ -17,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { useAuthStore } from '@/lib/store';
+import { useAuthStore, useNotificationStore } from '@/lib/store';
 
 const navItems = [
   { id: 'dashboard', label: 'الرئيسية', icon: Home, path: '/dashboard/expat/dashboard' },
@@ -29,6 +29,7 @@ const navItems = [
 export function ExpatNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, logout } = useAuthStore();
+  const { unreadCount, markAllAsRead } = useNotificationStore();
 
   return (
     <>
@@ -38,10 +39,8 @@ export function ExpatNavbar() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-[#1e3a5f] rounded-lg flex items-center justify-center">
-                <Home className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-bold text-xl text-[#1e3a5f] hidden sm:block">سكنك</span>
+              <img src="/src/assets/logo.png" alt="Sakanak" className="h-12 w-auto object-contain" />
+              <span className="font-bold text-2xl text-[#1e3a5f] hidden sm:block tracking-tight">سكنك</span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -53,10 +52,9 @@ export function ExpatNavbar() {
                     key={item.id}
                     to={item.path}
                     className={({ isActive }) =>
-                      `flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                        isActive
-                          ? 'bg-[#1e3a5f] text-white'
-                          : 'text-gray-600 hover:bg-gray-100'
+                      `flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isActive
+                        ? 'bg-[#1e3a5f] text-white'
+                        : 'text-gray-600 hover:bg-gray-100'
                       }`
                     }
                   >
@@ -84,9 +82,18 @@ export function ExpatNavbar() {
               </NavLink>
 
               {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+                onClick={() => markAllAsRead()}
+              >
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full">
+                    {unreadCount}
+                  </span>
+                )}
               </Button>
 
               {/* User Menu */}
@@ -134,10 +141,9 @@ export function ExpatNavbar() {
                     to={item.path}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                        isActive
-                          ? 'bg-[#1e3a5f] text-white'
-                          : 'text-gray-600 hover:bg-gray-100'
+                      `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive
+                        ? 'bg-[#1e3a5f] text-white'
+                        : 'text-gray-600 hover:bg-gray-100'
                       }`
                     }
                   >

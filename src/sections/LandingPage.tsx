@@ -39,18 +39,15 @@ export function LandingPage() {
     <div className="min-h-screen bg-white" dir="rtl">
       {/* Navigation */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-white shadow-lg' : 'bg-transparent'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-lg' : 'bg-transparent'
+          }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-[#1e3a5f] rounded-lg flex items-center justify-center">
-                <Home className="w-6 h-6 text-white" />
-              </div>
-              <span className={`font-bold text-xl ${isScrolled ? 'text-[#1e3a5f]' : 'text-white'}`}>
+              <img src="/src/assets/logo.png" alt="Sakanak" className="h-10 w-auto object-contain" />
+              <span className={`font-bold text-2xl ${isScrolled ? 'text-[#1e3a5f]' : 'text-white'} tracking-tight`}>
                 سكنك
               </span>
             </Link>
@@ -124,9 +121,9 @@ export function LandingPage() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a5f] via-[#1e3a5f] to-[#2a9d8f]" />
-        
+
         {/* Pattern Overlay */}
-        <div 
+        <div
           className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -139,16 +136,16 @@ export function LandingPage() {
             <Sparkles className="w-4 h-4 ml-1" />
             جزء من برنامج TIEC Start-IT 2025
           </Badge>
-          
+
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
             سكنك في مصر
             <span className="block text-[#f4a261]">بذكاء</span>
           </h1>
-          
+
           <p className="text-xl md:text-2xl text-white/80 mb-8 max-w-2xl mx-auto">
             أول منصة ذكية للسكن في مصر باستخدام AI. نساعدك تلاقي سكنك المثالي في دقائق!
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/auth/register">
               <Button size="lg" className="bg-[#f4a261] hover:bg-[#f4a261]/90 text-white px-8 py-6 text-lg">

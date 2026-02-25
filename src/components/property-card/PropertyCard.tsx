@@ -2,12 +2,13 @@
 // مكون بطاقة العقار
 
 import { useState } from 'react';
-import { 
-  MapPin, 
-  Bed, 
-  Bath, 
-  Users, 
-  Heart, 
+import { useNavigate } from 'react-router-dom';
+import {
+  MapPin,
+  Bed,
+  Bath,
+  Users,
+  Heart,
   BadgeCheck,
   Wifi,
   Wind,
@@ -53,16 +54,25 @@ export function PropertyCard({
   onClick,
   variant = 'default',
 }: PropertyCardProps) {
+  const navigate = useNavigate();
   const [imageError, setImageError] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
+
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick(property);
+    } else {
+      navigate(`/dashboard/expat/property/${property.id}`);
+    }
+  };
 
   const ownerBadge = getOwnerBadge(property.ownerStats);
 
   if (variant === 'compact') {
     return (
-      <Card 
+      <Card
         className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-        onClick={() => onClick?.(property)}
+        onClick={handleCardClick}
       >
         <div className="relative h-32">
           {!imageError ? (
@@ -70,9 +80,8 @@ export function PropertyCard({
               <img
                 src={property.images[0]}
                 alt={property.title}
-                className={`w-full h-full object-cover transition-opacity duration-300 ${
-                  isImageLoading ? 'opacity-0' : 'opacity-100'
-                }`}
+                className={`w-full h-full object-cover transition-opacity duration-300 ${isImageLoading ? 'opacity-0' : 'opacity-100'
+                  }`}
                 onLoad={() => setIsImageLoading(false)}
                 onError={() => setImageError(true)}
               />
@@ -85,13 +94,13 @@ export function PropertyCard({
               <Bed className="w-8 h-8 text-gray-400" />
             </div>
           )}
-          
+
           {showMatchScore && matchScore && (
             <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-bold ${getScoreBgColor(matchScore.finalScore)}`}>
               {matchScore.finalScore}% match
             </div>
           )}
-          
+
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -104,7 +113,7 @@ export function PropertyCard({
             />
           </button>
         </div>
-        
+
         <div className="p-3">
           <h3 className="font-medium text-sm truncate">{property.title}</h3>
           <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
@@ -126,9 +135,9 @@ export function PropertyCard({
 
   if (variant === 'horizontal') {
     return (
-      <Card 
+      <Card
         className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-        onClick={() => onClick?.(property)}
+        onClick={handleCardClick}
       >
         <div className="flex">
           <div className="relative w-48 h-32 flex-shrink-0">
@@ -137,9 +146,8 @@ export function PropertyCard({
                 <img
                   src={property.images[0]}
                   alt={property.title}
-                  className={`w-full h-full object-cover transition-opacity duration-300 ${
-                    isImageLoading ? 'opacity-0' : 'opacity-100'
-                  }`}
+                  className={`w-full h-full object-cover transition-opacity duration-300 ${isImageLoading ? 'opacity-0' : 'opacity-100'
+                    }`}
                   onLoad={() => setIsImageLoading(false)}
                   onError={() => setImageError(true)}
                 />
@@ -152,14 +160,14 @@ export function PropertyCard({
                 <Bed className="w-8 h-8 text-gray-400" />
               </div>
             )}
-            
+
             {showMatchScore && matchScore && (
               <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-bold ${getScoreBgColor(matchScore.finalScore)}`}>
                 {matchScore.finalScore}%
               </div>
             )}
           </div>
-          
+
           <div className="flex-1 p-4">
             <div className="flex justify-between items-start">
               <div>
@@ -169,7 +177,7 @@ export function PropertyCard({
                   <span>{property.location}</span>
                 </div>
               </div>
-              
+
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -182,7 +190,7 @@ export function PropertyCard({
                 />
               </button>
             </div>
-            
+
             <div className="flex items-center gap-4 mt-3 text-sm text-gray-600">
               <span className="flex items-center gap-1">
                 <Bed className="w-4 h-4" />
@@ -197,7 +205,7 @@ export function PropertyCard({
                 {property.rooms} غرفة
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between mt-4">
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className={ownerBadge.color}>
@@ -210,7 +218,7 @@ export function PropertyCard({
                   </Badge>
                 )}
               </div>
-              
+
               <div className="text-left">
                 <span className="text-2xl font-bold text-[#1e3a5f]">
                   {property.price.toLocaleString()}
@@ -228,9 +236,9 @@ export function PropertyCard({
 
   // Default variant
   return (
-    <Card 
+    <Card
       className="overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 group"
-      onClick={() => onClick?.(property)}
+      onClick={handleCardClick}
     >
       <div className="relative h-56">
         {!imageError ? (
@@ -238,9 +246,8 @@ export function PropertyCard({
             <img
               src={property.images[0]}
               alt={property.title}
-              className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${
-                isImageLoading ? 'opacity-0' : 'opacity-100'
-              }`}
+              className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${isImageLoading ? 'opacity-0' : 'opacity-100'
+                }`}
               onLoad={() => setIsImageLoading(false)}
               onError={() => setImageError(true)}
             />
@@ -253,14 +260,14 @@ export function PropertyCard({
             <Bed className="w-12 h-12 text-gray-400" />
           </div>
         )}
-        
+
         {/* Match Score Badge */}
         {showMatchScore && matchScore && (
           <div className={`absolute top-3 left-3 px-3 py-1.5 rounded-full text-sm font-bold ${getScoreBgColor(matchScore.finalScore)}`}>
             {matchScore.finalScore}% match
           </div>
         )}
-        
+
         {/* Favorite Button */}
         <button
           onClick={(e) => {
@@ -273,14 +280,14 @@ export function PropertyCard({
             className={`w-5 h-5 transition-colors ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
           />
         </button>
-        
+
         {/* Featured Badge */}
         {property.featured && (
           <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-[#f4a261] text-white text-sm font-medium">
             مميز
           </div>
         )}
-        
+
         {/* Image Counter */}
         {property.images.length > 1 && (
           <div className="absolute bottom-3 right-3 px-2 py-1 rounded-full bg-black/50 text-white text-xs">
@@ -288,7 +295,7 @@ export function PropertyCard({
           </div>
         )}
       </div>
-      
+
       <div className="p-5">
         {/* Title & Location */}
         <h3 className="font-bold text-lg mb-1 line-clamp-1">{property.title}</h3>
@@ -296,7 +303,7 @@ export function PropertyCard({
           <MapPin className="w-4 h-4 flex-shrink-0" />
           <span className="truncate">{property.location}</span>
         </div>
-        
+
         {/* Amenities */}
         <div className="flex flex-wrap gap-2 mb-4">
           {property.amenities.slice(0, 4).map((amenity) => (
@@ -321,7 +328,7 @@ export function PropertyCard({
             </span>
           )}
         </div>
-        
+
         {/* Owner Badge & Rating */}
         <div className="flex items-center gap-2 mb-4">
           <Badge variant="secondary" className={ownerBadge.color}>
@@ -334,7 +341,7 @@ export function PropertyCard({
             </Badge>
           )}
         </div>
-        
+
         {/* Details */}
         <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
           <span className="flex items-center gap-1">
@@ -350,7 +357,7 @@ export function PropertyCard({
             {property.rooms} غرفة
           </span>
         </div>
-        
+
         {/* Match Recommendation */}
         {showMatchScore && matchScore && (
           <div className="mb-4 p-3 bg-blue-50 rounded-lg">
@@ -359,7 +366,7 @@ export function PropertyCard({
             </p>
           </div>
         )}
-        
+
         {/* Price & CTA */}
         <div className="flex items-center justify-between pt-4 border-t">
           <div>
@@ -370,7 +377,7 @@ export function PropertyCard({
               ج/{priceTypeLabels[property.priceType]}
             </span>
           </div>
-          
+
           <Button className="bg-[#1e3a5f] hover:bg-[#1e3a5f]/90">
             شوف التفاصيل
           </Button>

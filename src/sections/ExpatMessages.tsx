@@ -2,6 +2,10 @@
 // صفحة المحادثات للمغتربين
 
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { MessageSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { ChatInterface, ChatList } from '@/components/chat-interface/ChatInterface';
 import { useAuthStore, useMessagesStore } from '@/lib/store';
 import { seedMessages, seedOwners, seedProperties } from '@/lib/seed-data';
@@ -9,8 +13,8 @@ import type { Message, User, Property } from '@/types';
 
 export function ExpatMessages() {
   const { user } = useAuthStore();
-  const { messages, setMessages, addMessage } = useMessagesStore();
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const { messages, setMessages, addMessage, activeConversation } = useMessagesStore();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(activeConversation || null);
   const [conversations, setConversations] = useState<any[]>([]);
 
   useEffect(() => {
@@ -41,7 +45,7 @@ export function ExpatMessages() {
       }
 
       acc[otherUserId].messages.push(message);
-      
+
       if (message.receiverId === user?.id && !message.read) {
         acc[otherUserId].unreadCount++;
       }
@@ -63,7 +67,7 @@ export function ExpatMessages() {
           role: 'OWNER',
         };
 
-        const property = seedProperties.find((p) => 
+        const property = seedProperties.find((p) =>
           data.messages.some((m) => m.propertyId === p.id)
         );
 
@@ -78,11 +82,34 @@ export function ExpatMessages() {
 
     setConversations(conversationsArray);
 
-    // اختيار أول محادثة تلقائياً
-    if (conversationsArray.length > 0 && !selectedUserId) {
+    // اختيار المحادثة النشطة إذا كانت موجودة، وإلا أول محادثة
+    if (activeConversation) {
+      setSelectedUserId(activeConversation);
+    } else if (conversationsArray.length > 0 && !selectedUserId) {
       setSelectedUserId(conversationsArray[0].user.id);
     }
-  }, [messages, user]);
+  }, [messages, user, activeConversation]);
+
+  if (conversations.length === 0) {
+    return (
+      <div className="h-[calc(100vh-64px)] bg-gray-50 flex items-center justify-center p-8 text-center">
+        <Card className="max-w-md p-8 flex flex-col items-center">
+          <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+            <MessageSquare className="w-10 h-10 text-[#1e3a5f] opacity-40" />
+          </div>
+          <h2 className="text-2xl font-bold text-[#1e3a5f] mb-2">لا توجد محادثات</h2>
+          <p className="text-gray-500 mb-8">
+            ابدأ بالبحث عن سكن وتواصل مع الملاك للحصول على مزيد من المعلومات أو حجز معاينة.
+          </p>
+          <Link to="/dashboard/expat/search">
+            <Button className="bg-[#1e3a5f] hover:bg-[#1e3a5f]/90">
+              استكشف السكنات المتاحة
+            </Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
 
   const selectedConversation = conversations.find(
     (c) => c.user.id === selectedUserId
@@ -90,10 +117,10 @@ export function ExpatMessages() {
 
   const conversationMessages = selectedUserId
     ? messages.filter(
-        (m) =>
-          (m.senderId === user?.id && m.receiverId === selectedUserId) ||
-          (m.senderId === selectedUserId && m.receiverId === user?.id)
-      )
+      (m) =>
+        (m.senderId === user?.id && m.receiverId === selectedUserId) ||
+        (m.senderId === selectedUserId && m.receiverId === user?.id)
+    )
     : [];
 
   const handleSendMessage = (content: string) => {

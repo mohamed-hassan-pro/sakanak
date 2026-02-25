@@ -46,6 +46,12 @@ export function ExpatSearch() {
       );
     }
 
+    if (criteria.maxDistance !== undefined) {
+      filtered = filtered.filter((p) =>
+        p.distanceTo?.distance !== undefined && p.distanceTo.distance <= criteria.maxDistance!
+      );
+    }
+
     // تحديث الـ store
     // usePropertiesStore.setState({ filteredProperties: filtered });
   }, [criteria, properties]);
@@ -64,9 +70,8 @@ export function ExpatSearch() {
     setCriteria(newCriteria);
   };
 
-  const displayProperties = criteria.city || criteria.type || criteria.minPrice !== undefined
-    ? filteredProperties
-    : properties;
+  const isFiltering = Object.keys(criteria).length > 0;
+  const displayProperties = isFiltering ? filteredProperties : properties;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -86,22 +91,20 @@ export function ExpatSearch() {
               <div className="flex items-center bg-gray-100 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${
-                    viewMode === 'grid'
-                      ? 'bg-white shadow-sm text-[#1e3a5f]'
-                      : 'text-gray-500'
-                  }`}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${viewMode === 'grid'
+                    ? 'bg-white shadow-sm text-[#1e3a5f]'
+                    : 'text-gray-500'
+                    }`}
                 >
                   <Grid3X3 className="w-4 h-4" />
                   <span className="hidden sm:inline">شبكة</span>
                 </button>
                 <button
                   onClick={() => setViewMode('map')}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${
-                    viewMode === 'map'
-                      ? 'bg-white shadow-sm text-[#1e3a5f]'
-                      : 'text-gray-500'
-                  }`}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${viewMode === 'map'
+                    ? 'bg-white shadow-sm text-[#1e3a5f]'
+                    : 'text-gray-500'
+                    }`}
                 >
                   <MapIcon className="w-4 h-4" />
                   <span className="hidden sm:inline">خريطة</span>

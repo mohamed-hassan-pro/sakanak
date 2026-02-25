@@ -184,6 +184,7 @@ export interface SearchCriteria {
   maxPrice?: number;
   type?: PropertyType;
   amenities?: string[];
+  maxDistance?: number;
 }
 
 // معايير AI Matching
@@ -249,3 +250,13 @@ export const SEARCH_PRIORITIES = [
   { id: 'strong_wifi', name: 'WiFi قوي', icon: 'Wifi' },
   { id: 'furnished', name: 'مفروش', icon: 'Sofa' },
 ] as const;
+
+export interface Notification {
+  id: string;
+  type: 'message' | 'booking' | 'review' | 'system';
+  title: string;
+  content: string;
+  link: string;
+  read: boolean;
+  createdAt: Date;
+}
